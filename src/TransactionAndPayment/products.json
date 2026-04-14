@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Nescafé Gold 200g",
+    "sku": "SKU-001",
+    "stock": 42,
+    "price": 4.50,
+    "min_stock": 10,
+    "created_at": "2025-01-01T08:00:00Z",
+    "updated_at": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Lay's Classic Chips",
+    "sku": "SKU-002",
+    "stock": 5,
+    "price": 1.75,
+    "min_stock": 10,
+    "created_at": "2025-01-01T08:00:00Z",
+    "updated_at": "2025-01-01T08:00:00Z"
+  },
+  {
+    "id": 3,
+    "name": "Mineral Water 1.5L",
+    "sku": "SKU-003",
+    "stock": 120,
+    "price": 0.85,
+    "min_stock": 10,
+    "created_at": "2025-01-01T08:00:00Z",
+    "updated_at": "2025-01-01T08:00:00Z"
+  }
+]

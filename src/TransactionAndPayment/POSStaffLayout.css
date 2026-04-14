@@ -1,0 +1,69 @@
+/* ── Staff layout (sales + purchase) ─────────────────────────────────────── */
+.pos-staff-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+  .pos-staff-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 36px;
+    background: #1e3a8a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    position: sticky;
+    top: 0;
+    z-index: 60;
+  }
+  .pos-staff-bar__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pos-staff-bar__link {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .pos-staff-bar__link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .pos-staff-bar__link--active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+  .pos-staff-bar__logout {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(220, 38, 38, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s;
+  }
+  .pos-staff-bar__logout:hover {
+    background: #b91c1c;
+  }
+  .pos-body--placeholder {
+    flex: 1;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 24px;
+  }
