@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 
 const ProductsTab = ({
   editingProduct,
@@ -10,6 +11,7 @@ const ProductsTab = ({
   onEditProduct,
   onDeleteProduct,
 }) => {
+  const [brands,setBrands] = useState([])
   return (
     <div className="tab-content">
       <div className="form-section">
@@ -61,15 +63,20 @@ const ProductsTab = ({
             />
           </div>
           <div className="form-group">
-            <label>Brand</label>
-            <input
-              type="text"
-              name="prd_brand"
-              value={formData.prd_brand}
-              onChange={onFormChange}
-              placeholder="Optional"
-            />
-          </div>
+  <label>Brand</label>
+  <select
+    name="prd_brand"
+    value={formData.prd_brand}
+    onChange={onFormChange}
+  >
+    <option value="">Select a brand</option>
+    {brands.map((brand) => (
+      <option key={brand.brn_id} value={brand.brn_name}>
+        {brand.brn_name}
+      </option>
+    ))}
+  </select>
+</div>
         </div>
 
         <div className="form-row">

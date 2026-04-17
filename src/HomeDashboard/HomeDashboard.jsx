@@ -9,6 +9,9 @@ import TransactionsTab from './tabs/TransactionsTab';
 import AlertsTab from './tabs/AlertsTab';
 import { FetchData } from '../functions';
 import Swal from 'sweetalert2';
+import SuppliersTab from './tabs/SuppliersTab';
+import BrandsTab from './tabs/BrandsTab';
+import CategoryTab from './tabs/CategoryTab';
 
 const API = 'http://localhost:3001/api/products';
 const TRANSACTIONS_API = 'http://localhost:3001/api/transactions';
@@ -254,6 +257,9 @@ const HomeDashboard = () => {
     { key: 'stock', label: 'Stock' },
     { key: 'transactions', label: 'History' },
     { key: 'alerts', label: 'Alerts' },
+    { key: 'suppliers', label: 'Suppliers' },
+    { key: 'brands', label: 'Brands' },
+    { key: 'category', label: 'Categories' },
   ];
 
   return (
@@ -316,6 +322,9 @@ const HomeDashboard = () => {
           />
         )}
         {activeTab === 'alerts' && <AlertsTab lowStockAlerts={lowStockAlerts} />}
+        {activeTab === 'suppliers' && <SuppliersTab  />}
+        {activeTab === 'brands' && <BrandsTab  />}
+        {activeTab === 'category' && <CategoryTab  />}
       </main>
     </div>
   );

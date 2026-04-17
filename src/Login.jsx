@@ -34,7 +34,7 @@ const Login = () => {
     async function handleSubmit(e) {
         e.preventDefault();
         // Super user → inventory admin dashboard
-        if (uname === "SU" && pass === "SU") {
+        if (uname === "su" && pass === "su") {
             sessionStorage.setItem("auth", uname);
             sessionStorage.setItem("userRole", "admin");
             localStorage.setItem("item_key", uname);
