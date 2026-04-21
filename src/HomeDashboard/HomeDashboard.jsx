@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 import SuppliersTab from './tabs/SuppliersTab';
 import BrandsTab from './tabs/BrandsTab';
 import CategoryTab from './tabs/CategoryTab';
+import DailyReport from './tabs/DailyReport';
 
 const API = 'http://localhost:3001/api/products';
 const TRANSACTIONS_API = 'http://localhost:3001/api/transactions';
@@ -260,6 +261,7 @@ const HomeDashboard = () => {
     { key: 'suppliers', label: 'Suppliers' },
     { key: 'brands', label: 'Brands' },
     { key: 'category', label: 'Categories' },
+    { key: 'dailyReport', label: 'Daily Report' },
   ];
 
   return (
@@ -325,6 +327,7 @@ const HomeDashboard = () => {
         {activeTab === 'suppliers' && <SuppliersTab  />}
         {activeTab === 'brands' && <BrandsTab  />}
         {activeTab === 'category' && <CategoryTab  />}
+        {activeTab === 'dailyReport' && <DailyReport  />}
       </main>
     </div>
   );

@@ -1,0 +1,90 @@
+{
+  "transactions": [
+    {
+      "pth_id": 1,
+      "pth_reference": "REF-0091",
+      "pth_customer_name": "Rami Khoury",
+      "pth_TotalPrice": "47.50",
+      "pth_date": "2026-04-21T08:14:00Z",
+      "details": [
+        { "ptd_prd_id": 3, "ptd_quantity": 2, "ptd_price": "12.00", "prd_name": "Olive Oil 1L" },
+        { "ptd_prd_id": 7, "ptd_quantity": 1, "ptd_price": "23.50", "prd_name": "Labneh 500g" }
+      ]
+    },
+    {
+      "pth_id": 2,
+      "pth_reference": "REF-0092",
+      "pth_customer_name": null,
+      "pth_TotalPrice": "13.75",
+      "pth_date": "2026-04-21T09:02:00Z",
+      "details": [
+        { "ptd_prd_id": 1, "ptd_quantity": 3, "ptd_price": "3.25", "prd_name": "Mineral Water 1.5L" },
+        { "ptd_prd_id": 5, "ptd_quantity": 1, "ptd_price": "4.00", "prd_name": "Bread Loaf" }
+      ]
+    },
+    {
+      "pth_id": 3,
+      "pth_reference": "REF-0093",
+      "pth_customer_name": "Lara Nassar",
+      "pth_TotalPrice": "88.00",
+      "pth_date": "2026-04-21T10:30:00Z",
+      "details": [
+        { "ptd_prd_id": 9, "ptd_quantity": 2, "ptd_price": "35.00", "prd_name": "Chicken Breast 1kg" },
+        { "ptd_prd_id": 2, "ptd_quantity": 2, "ptd_price": "9.00", "prd_name": "Feta Cheese 250g" }
+      ]
+    },
+    {
+      "pth_id": 4,
+      "pth_reference": "REF-0094",
+      "pth_customer_name": null,
+      "pth_TotalPrice": "22.00",
+      "pth_date": "2026-04-21T11:15:00Z",
+      "details": [
+        { "ptd_prd_id": 4, "ptd_quantity": 4, "ptd_price": "5.50", "prd_name": "Orange Juice 1L" }
+      ]
+    },
+    {
+      "pth_id": 5,
+      "pth_reference": "REF-0095",
+      "pth_customer_name": "Elie Gemayel",
+      "pth_TotalPrice": "61.25",
+      "pth_date": "2026-04-21T12:45:00Z",
+      "details": [
+        { "ptd_prd_id": 6, "ptd_quantity": 1, "ptd_price": "18.00", "prd_name": "Basmati Rice 2kg" },
+        { "ptd_prd_id": 8, "ptd_quantity": 5, "ptd_price": "8.65", "prd_name": "Tuna Can 180g" }
+      ]
+    },
+    {
+      "pth_id": 6,
+      "pth_reference": "REF-0096",
+      "pth_customer_name": "Maya Hajj",
+      "pth_TotalPrice": "34.00",
+      "pth_date": "2026-04-21T13:20:00Z",
+      "details": [
+        { "ptd_prd_id": 10, "ptd_quantity": 2, "ptd_price": "17.00", "prd_name": "Halloumi 500g" }
+      ]
+    },
+    {
+      "pth_id": 7,
+      "pth_reference": "REF-0097",
+      "pth_customer_name": null,
+      "pth_TotalPrice": "9.50",
+      "pth_date": "2026-04-21T14:05:00Z",
+      "details": [
+        { "ptd_prd_id": 5, "ptd_quantity": 1, "ptd_price": "4.00", "prd_name": "Bread Loaf" },
+        { "ptd_prd_id": 1, "ptd_quantity": 1, "ptd_price": "3.25", "prd_name": "Mineral Water 1.5L" },
+        { "ptd_prd_id": 11, "ptd_quantity": 1, "ptd_price": "2.25", "prd_name": "Yogurt Cup 200g" }
+      ]
+    },
+    {
+      "pth_id": 8,
+      "pth_reference": "REF-0098",
+      "pth_customer_name": "Joelle Azar",
+      "pth_TotalPrice": "120.00",
+      "pth_date": "2026-04-21T15:50:00Z",
+      "details": [
+        { "ptd_prd_id": 12, "ptd_quantity": 4, "ptd_price": "30.00", "prd_name": "Beef Minced 500g" }
+      ]
+    }
+  ]
+}
