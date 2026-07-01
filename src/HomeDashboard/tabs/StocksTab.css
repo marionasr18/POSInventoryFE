@@ -1,0 +1,25 @@
+.stock-product{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  
+  .stock-image{
+    width:60px;
+    height:60px;
+    object-fit:contain;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:4px;
+  }
+  
+  .stock-product-info{
+    display:flex;
+    flex-direction:column;
+  }
+  
+  .stock-keydata{
+    font-size:12px;
+    color:#666;
+    margin-top:4px;
+  }

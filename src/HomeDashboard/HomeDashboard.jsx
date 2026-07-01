@@ -13,6 +13,7 @@ import SuppliersTab from './tabs/SuppliersTab';
 import BrandsTab from './tabs/BrandsTab';
 import CategoryTab from './tabs/CategoryTab';
 import DailyReport from './tabs/DailyReport';
+import productsData from '../TransactionAndPayment/products.json';
 
 const API = 'http://localhost:3001/api/products';
 const TRANSACTIONS_API = 'http://localhost:3001/api/transactions';
@@ -89,12 +90,19 @@ const HomeDashboard = () => {
 
   const [products, setProducts] = useState([]);
 
-  const loadProducts = useCallback(async () => {
+  // const loadProducts = useCallback(async () => {
+  //   try {
+  //     const data = await FetchData(API, 'get');
+  //     if (data.status === 200 && Array.isArray(data.data)) {
+  //       setProducts(data.data);
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // }, []);
+  const loadProducts = useCallback( () => {
     try {
-      const data = await FetchData(API, 'get');
-      if (data.status === 200 && Array.isArray(data.data)) {
-        setProducts(data.data);
-      }
+        setProducts(productsData);
     } catch (e) {
       console.error(e);
     }
