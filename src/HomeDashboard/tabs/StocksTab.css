@@ -8,8 +8,9 @@
     width:60px;
     height:60px;
     object-fit:contain;
-    border:1px solid #ddd;
-    border-radius:8px;
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-sm);
+    background: var(--card-bg);
     padding:4px;
   }
   
@@ -20,6 +21,6 @@
   
   .stock-keydata{
     font-size:12px;
-    color:#666;
+    color:var(--text-secondary);
     margin-top:4px;
   }

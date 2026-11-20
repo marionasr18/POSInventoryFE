@@ -10,7 +10,9 @@ function lineTotal(d) {
   return Number(d.ptd_quantity) * Number(d.ptd_price);
 }
 
-function saleTotal(details) {
+function transactionTotal(t, details) {
+  const header = Number(t?.pth_TotalPrice);
+  if (Number.isFinite(header) && header > 0) return header;
   if (!details?.length) return 0;
   return details.reduce((s, d) => {
     const line = lineTotal(d);
@@ -61,20 +63,23 @@ const TransactionsTab = ({ transactions, loading, error, onRetry }) => {
 
   return (
     <div className="tab-content">
-      <p className="transactions-tab-hint">Select a sale to view line items.</p>
+      <p className="transactions-tab-hint">Select a sale or purchase to view line items.</p>
       <div className="transactions-list">
         {sorted.length === 0 ? (
-          <div className="empty-state">No sales recorded yet</div>
+          <div className="empty-state">No transactions recorded yet</div>
         ) : (
           sorted.map((t) => {
             const id = t.pth_id;
             const isOpen = selectedId === id;
             const details = t.details || [];
             const units = saleUnits(details);
-            const total = saleTotal(details);
+            const total = transactionTotal(t, details);
             const when = t.pth_created_at ? new Date(t.pth_created_at) : null;
+            const type = (t.pth_type || '').toUpperCase();
             const typeLabel =
-              (t.pth_type || '').toUpperCase() === 'OUT' ? 'Sale' : String(t.pth_type || '—');
+              type === 'OUT' ? 'Sale' : type === 'IN' ? 'Purchase' : String(t.pth_type || '—');
+            const partyLabel =
+              type === 'IN' ? 'Supplier' : 'Customer';
 
             return (
               <div
@@ -92,10 +97,12 @@ const TransactionsTab = ({ transactions, loading, error, onRetry }) => {
               >
                 <div className="transaction-header">
                   <div>
-                    <div className="transaction-title">Sale #{id}</div>
+                    <div className="transaction-title">
+                      {type === 'IN' ? 'Purchase' : 'Sale'} #{id}
+                    </div>
                     <div className="transaction-sub">
                       {when ? when.toLocaleString() : '—'}
-                      {t.pth_customer_name ? ` · ${t.pth_customer_name}` : ''}
+                      {t.pth_customer_name ? ` · ${partyLabel}: ${t.pth_customer_name}` : ''}
                     </div>
                   </div>
                   <div className="transaction-header__right">
@@ -126,7 +133,10 @@ const TransactionsTab = ({ transactions, loading, error, onRetry }) => {
                       <thead>
                         <tr>
                           <th>Product</th>
+                          <th className="num">Code</th>
                           <th className="num">Qty</th>
+                          <th className="num">Unit</th>
+                          <th className="num">Disc%</th>
                           <th className="num">Price</th>
                           <th className="num">Line total</th>
                         </tr>
@@ -134,8 +144,16 @@ const TransactionsTab = ({ transactions, loading, error, onRetry }) => {
                       <tbody>
                         {details.map((d) => (
                           <tr key={d.ptd_id}>
-                            <td>{d.prd_name}</td>
+                            <td>
+                              {d.prd_name}
+                              {d.ptd_brand ? ` (${d.ptd_brand})` : ''}
+                            </td>
+                            <td className="num">{d.prd_sku || '—'}</td>
                             <td className="num">{d.ptd_quantity}</td>
+                            <td className="num">{(d.ptd_unit || 'pcs').toUpperCase()}</td>
+                            <td className="num">
+                              {d.ptd_discount_pct != null ? d.ptd_discount_pct : '—'}
+                            </td>
                             <td className="num">${fmtMoney(d.ptd_price)}</td>
                             <td className="num">${fmtMoney(lineTotal(d))}</td>
                           </tr>

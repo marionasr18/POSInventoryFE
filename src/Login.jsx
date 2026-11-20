@@ -114,8 +114,9 @@ const Login = () => {
     return (
         <div className="login-container">
           <div className="login-card">
-            <h2 className="login-title">Sign in</h2>
-      
+            <h2 className="login-title">MarioPOS</h2>
+            <p className="login-subtitle">Sign in to admin or point of sale</p>
+
             <form onSubmit={handleSubmit}>
               <input
                 className="login-input"

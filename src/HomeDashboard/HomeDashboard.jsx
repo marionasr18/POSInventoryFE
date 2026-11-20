@@ -90,19 +90,41 @@ const HomeDashboard = () => {
 
   const [products, setProducts] = useState([]);
 
-  // const loadProducts = useCallback(async () => {
-  //   try {
-  //     const data = await FetchData(API, 'get');
-  //     if (data.status === 200 && Array.isArray(data.data)) {
-  //       setProducts(data.data);
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }, []);
-  const loadProducts = useCallback( () => {
+  function normalizeCatalogItem(p) {
+    if (p.prd_name && p.prd_sku) return p;
+    const price =
+      p.prd_selling_price ?? p.productPrice ?? p.price ?? p.prd_cost_price ?? 0;
+    const cost = p.prd_cost_price ?? p.cost_price ?? price;
+    return {
+      prd_id: p.prd_id ?? p.productId ?? p.id,
+      prd_name: p.prd_name ?? p.name ?? p.productName ?? '',
+      prd_sku: p.prd_sku ?? p.sku ?? p.productCode ?? '',
+      prd_barcode: p.prd_barcode ?? p.barcode ?? '',
+      prd_brand: p.prd_brand ?? p.brand ?? p.brandName ?? '',
+      prd_category_id: p.prd_category_id ?? null,
+      prd_supplier_id: p.prd_supplier_id ?? null,
+      prd_unit: p.prd_unit ?? p.unit ?? 'pcs',
+      prd_stock: Number(p.prd_stock ?? p.stock ?? 0),
+      prd_min_stock: Number(p.prd_min_stock ?? p.min_stock ?? 10),
+      prd_cost_price: Number(cost),
+      prd_selling_price: Number(price),
+      prd_description: p.prd_description ?? p.description ?? '',
+      prd_is_active: p.prd_is_active !== 0 && p.prd_is_active !== false,
+    };
+  }
+
+  const loadProducts = useCallback(async () => {
     try {
-        setProducts(productsData);
+      const data = await FetchData(API, 'get');
+      if (data.status === 200 && Array.isArray(data.data) && data.data.length > 0) {
+        setProducts(data.data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Products API unavailable, using local catalog', e);
+    }
+    try {
+      setProducts(productsData.map(normalizeCatalogItem));
     } catch (e) {
       console.error(e);
     }
@@ -138,7 +160,7 @@ const HomeDashboard = () => {
   }, [loadTransactions]);
 
   useEffect(() => {
-    if (activeTab === 'transactions') {
+    if (activeTab === 'transactions' || activeTab === 'dailyReport') {
       loadTransactions();
     }
   }, [activeTab, loadTransactions]);
@@ -207,7 +229,6 @@ const HomeDashboard = () => {
           return;
         }
       } else {
-        debugger
         const res = await FetchData("http://localhost:3001/api/addProducts", 'post', payload);
         if (res.status !== 201) {
           Swal.fire({
@@ -335,7 +356,14 @@ const HomeDashboard = () => {
         {activeTab === 'suppliers' && <SuppliersTab  />}
         {activeTab === 'brands' && <BrandsTab  />}
         {activeTab === 'category' && <CategoryTab  />}
-        {activeTab === 'dailyReport' && <DailyReport  />}
+        {activeTab === 'dailyReport' && (
+          <DailyReport
+            transactions={transactions}
+            loading={transactionsLoading}
+            error={transactionsError}
+            onRetry={loadTransactions}
+          />
+        )}
       </main>
     </div>
   );

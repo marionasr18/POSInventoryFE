@@ -11,9 +11,10 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
-    padding: 12px 36px;
-    background: #1e3a8a;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 12px 28px;
+    background: var(--header-gradient);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-md);
     position: sticky;
     top: 0;
     z-index: 60;

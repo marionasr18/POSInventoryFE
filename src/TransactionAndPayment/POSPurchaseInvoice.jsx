@@ -1,14 +1,17 @@
 import { useState, useRef } from "react";
 import "./POSPurchaseInvoice.css";
+import { lineSubtotal, invoiceTotal, stockQty } from "./purchaseLineMath";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const fmt    = (n) => new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 const nowStr = ()  => new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
 const uid    = ()  => Math.random().toString(36).slice(2, 8).toUpperCase();
+const lineTotal = (l) =>
+  lineSubtotal(l.qty, l.qtyPerPcs ?? 1, l.costPrice, l.discountPct ?? 0);
 
 // ── Confirmation Modal ────────────────────────────────────────────────────────
-function ConfirmModal({ invoice, onConfirm, onCancel }) {
-  const total = invoice.lines.reduce((s, l) => s + l.qty * l.costPrice, 0);
+function ConfirmModal({ invoice, onConfirm, onCancel, busy }) {
+  const total = invoice.total ?? invoiceTotal(invoice.lines);
   return (
     <div className="pi-overlay" onClick={onCancel}>
       <div className="pi-modal" onClick={(e) => e.stopPropagation()}>
@@ -19,7 +22,8 @@ function ConfirmModal({ invoice, onConfirm, onCancel }) {
 
         <div className="pi-modal__meta">
           <span><strong>Supplier:</strong> {invoice.supplier || "—"}</span>
-          <span><strong>Ref #:</strong> {invoice.ref}</span>
+          <span><strong>Invoice #:</strong> {invoice.supplierInvoiceNo || invoice.ref}</span>
+          <span><strong>Currency:</strong> {invoice.currency || "USD"}</span>
           <span><strong>Date:</strong> {invoice.date}</span>
         </div>
 
@@ -27,12 +31,14 @@ function ConfirmModal({ invoice, onConfirm, onCancel }) {
           <table className="pi-modal__table">
             <thead>
               <tr>
-                <th>SKU</th>
+                <th>Code</th>
                 <th>Product</th>
-                <th>Action</th>
+                <th>Unit</th>
                 <th>Qty</th>
-                <th>Cost/Unit</th>
-                <th>Sell Price</th>
+                <th>Qty/Pcs</th>
+                <th>Stock +</th>
+                <th>Price</th>
+                <th>Disc%</th>
                 <th>Subtotal</th>
               </tr>
             </thead>
@@ -40,16 +46,14 @@ function ConfirmModal({ invoice, onConfirm, onCancel }) {
               {invoice.lines.map((l, i) => (
                 <tr key={i}>
                   <td><span className="pi-sku-chip">{l.sku}</span></td>
-                  <td>{l.name}</td>
-                  <td>
-                    <span className={`pi-action-badge pi-action-badge--${l.isNew ? "new" : "restock"}`}>
-                      {l.isNew ? "NEW PRODUCT" : "RESTOCK"}
-                    </span>
-                  </td>
-                  <td className="pi-num">+{l.qty}</td>
+                  <td>{l.name}{l.brand ? <em className="pi-success__sku"> · {l.brand}</em> : null}</td>
+                  <td className="pi-num">{(l.unit || "pcs").toUpperCase()}</td>
+                  <td className="pi-num">{l.qty}</td>
+                  <td className="pi-num">{l.qtyPerPcs ?? 1}</td>
+                  <td className="pi-num">+{stockQty(l.qty, l.qtyPerPcs ?? 1)}</td>
                   <td className="pi-num">${fmt(l.costPrice)}</td>
-                  <td className="pi-num">${fmt(l.sellPrice)}</td>
-                  <td className="pi-num pi-num--accent">${fmt(l.qty * l.costPrice)}</td>
+                  <td className="pi-num">{l.discountPct || 0}%</td>
+                  <td className="pi-num pi-num--accent">${fmt(lineTotal(l))}</td>
                 </tr>
               ))}
             </tbody>
@@ -63,8 +67,8 @@ function ConfirmModal({ invoice, onConfirm, onCancel }) {
           </div>
           <div className="pi-modal__actions">
             <button className="pi-btn pi-btn--ghost" onClick={onCancel}>Cancel</button>
-            <button className="pi-btn pi-btn--primary" onClick={onConfirm}>
-              ✓ Confirm &amp; Update Inventory
+            <button className="pi-btn pi-btn--primary" onClick={onConfirm} disabled={busy}>
+              {busy ? "Saving…" : "✓ Confirm & Update Inventory"}
             </button>
           </div>
         </div>
@@ -75,7 +79,7 @@ function ConfirmModal({ invoice, onConfirm, onCancel }) {
 
 // ── Success Receipt ───────────────────────────────────────────────────────────
 function SuccessView({ invoice, onNew }) {
-  const total = invoice.lines.reduce((s, l) => s + l.qty * l.costPrice, 0);
+  const total = invoice.total ?? invoiceTotal(invoice.lines);
   return (
     <div className="pi-success">
       <div className="pi-success__icon">✓</div>
@@ -129,10 +133,14 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
     setSkuSearch(p.sku);
     setShowDrop(false);
     onChange(index, {
-      sku:       p.sku,
-      name:      p.name,
+      sku: p.sku,
+      name: p.name,
+      brand: p.brand || "",
+      unit: p.unit || "pcs",
       sellPrice: p.price,
-      isNew:     false,
+      costPrice: p.cost ?? line.costPrice,
+      prd_id: p.prd_id,
+      isNew: false,
     });
   };
 
@@ -144,9 +152,18 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
       (p) => p.sku.toLowerCase() === val.toLowerCase()
     );
     if (exact) {
-      onChange(index, { sku: val.toUpperCase(), name: exact.name, sellPrice: exact.price, isNew: false });
+      onChange(index, {
+        sku: val.toUpperCase(),
+        name: exact.name,
+        brand: exact.brand || "",
+        unit: exact.unit || "pcs",
+        sellPrice: exact.price,
+        costPrice: exact.cost ?? line.costPrice,
+        prd_id: exact.prd_id,
+        isNew: false,
+      });
     } else {
-      onChange(index, { sku: val.toUpperCase(), isNew: val.length > 0 });
+      onChange(index, { sku: val.toUpperCase(), prd_id: null, isNew: val.length > 0 });
     }
   };
 
@@ -186,9 +203,29 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
       <div className="pi-line-row__field pi-line-row__field--name">
         <input
           className="pi-input"
-          placeholder="Product name"
+          placeholder="Description / الصنف"
           value={line.name}
           onChange={(e) => onChange(index, { name: e.target.value })}
+        />
+      </div>
+
+      {/* Brand */}
+      <div className="pi-line-row__field pi-line-row__field--xs">
+        <input
+          className="pi-input"
+          placeholder="Brand"
+          value={line.brand || ""}
+          onChange={(e) => onChange(index, { brand: e.target.value })}
+        />
+      </div>
+
+      {/* Unit */}
+      <div className="pi-line-row__field pi-line-row__field--xs">
+        <input
+          className="pi-input pi-input--center"
+          placeholder="PCS"
+          value={line.unit || ""}
+          onChange={(e) => onChange(index, { unit: e.target.value })}
         />
       </div>
 
@@ -197,10 +234,25 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
         <input
           className="pi-input pi-input--center"
           type="number"
-          min="1"
+          min="0"
+          step="0.01"
           placeholder="Qty"
           value={line.qty || ""}
-          onChange={(e) => onChange(index, { qty: parseInt(e.target.value) || 0 })}
+          onChange={(e) => onChange(index, { qty: parseFloat(e.target.value) || 0 })}
+        />
+      </div>
+
+      {/* Qty per pack */}
+      <div className="pi-line-row__field pi-line-row__field--xs">
+        <input
+          className="pi-input pi-input--center"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="1"
+          title="Pieces per unit (Ghazzawi Qty/Pcs). Use 1 for PCS invoices."
+          value={line.qtyPerPcs ?? 1}
+          onChange={(e) => onChange(index, { qtyPerPcs: parseInt(e.target.value, 10) || 1 })}
         />
       </div>
 
@@ -218,6 +270,20 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
             onChange={(e) => onChange(index, { costPrice: parseFloat(e.target.value) || 0 })}
           />
         </div>
+      </div>
+
+      {/* Discount % */}
+      <div className="pi-line-row__field pi-line-row__field--xs">
+        <input
+          className="pi-input pi-input--center"
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          placeholder="0"
+          value={line.discountPct ?? ""}
+          onChange={(e) => onChange(index, { discountPct: parseFloat(e.target.value) || 0 })}
+        />
       </div>
 
       {/* Selling price */}
@@ -252,7 +318,8 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
 
       {/* Subtotal */}
       <div className="pi-line-row__subtotal">
-        ${fmt((line.qty || 0) * (line.costPrice || 0))}
+        ${fmt(lineTotal(line))}
+        <span className="pi-line-stock-hint">+{stockQty(line.qty, line.qtyPerPcs ?? 1)} pcs</span>
       </div>
 
       {/* Remove */}
@@ -265,23 +332,42 @@ function LineRow({ line, index, existingProducts, onChange, onRemove }) {
 
 // ── Empty line factory ────────────────────────────────────────────────────────
 const emptyLine = () => ({
-  sku: "", name: "", qty: 0, costPrice: 0, sellPrice: 0, minStock: 10, isNew: true,
+  sku: "",
+  name: "",
+  brand: "",
+  unit: "pcs",
+  qty: 0,
+  qtyPerPcs: 1,
+  costPrice: 0,
+  sellPrice: 0,
+  discountPct: 0,
+  minStock: 10,
+  isNew: true,
+  prd_id: null,
 });
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
   const [supplier, setSupplier] = useState("");
-  const [notes, setNotes]       = useState("");
-  const [lines, setLines]       = useState([emptyLine()]);
+  const [supplierInvoiceNo, setSupplierInvoiceNo] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [lines, setLines] = useState([emptyLine()]);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [saved, setSaved]             = useState(false);
+  const [saved, setSaved] = useState(false);
   const [savedInvoice, setSavedInvoice] = useState(null);
-  const [toast, setToast]             = useState(null);
+  const [toast, setToast] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  const invoiceRef = useRef(`PO-${uid()}`);
-  const dateRef    = useRef(nowStr());
+  const invoiceRef = useRef(`GRN-${uid()}`);
+  const dateRef = useRef(nowStr());
 
-  const total = lines.reduce((s, l) => s + (l.qty || 0) * (l.costPrice || 0), 0);
+  const total = invoiceTotal(lines);
+  const totalStockUnits = lines.reduce(
+    (s, l) => s + stockQty(l.qty, l.qtyPerPcs ?? 1),
+    0
+  );
 
   // ── Toast ─────────────────────────────────────────────────────────────────
   const fireToast = (msg, type = "success") => {
@@ -313,33 +399,48 @@ export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
   };
 
   // ── Confirm & save ────────────────────────────────────────────────────────
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const invoice = {
-      ref:      invoiceRef.current,
-      date:     dateRef.current,
+      ref: invoiceRef.current,
+      date: dateRef.current,
       supplier,
+      supplierInvoiceNo,
+      currency,
+      deliveryDate,
       notes,
       lines,
+      total,
     };
 
-    // In real app: call your API here to:
-    // 1. INSERT/UPDATE tbl_products (name, sku, price, stock += qty, min_stock)
-    // 2. INSERT tbl_stock_movements (product_id, qty, type='purchase', note, ref)
-    if (onSave) onSave(invoice);
+    if (!onSave) {
+      fireToast("Purchase API is not configured", "error");
+      return;
+    }
 
-    setSavedInvoice(invoice);
-    setSaved(true);
-    setShowConfirm(false);
+    setSaving(true);
+    try {
+      await onSave(invoice);
+      setSavedInvoice(invoice);
+      setSaved(true);
+      setShowConfirm(false);
+    } catch (err) {
+      fireToast(err.message || "Failed to save purchase", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleNew = () => {
     setLines([emptyLine()]);
     setSupplier("");
+    setSupplierInvoiceNo("");
+    setCurrency("USD");
+    setDeliveryDate("");
     setNotes("");
     setSaved(false);
     setSavedInvoice(null);
-    invoiceRef.current = `PO-${uid()}`;
-    dateRef.current    = nowStr();
+    invoiceRef.current = `GRN-${uid()}`;
+    dateRef.current = nowStr();
   };
 
   // ── Render: success ───────────────────────────────────────────────────────
@@ -377,19 +478,44 @@ export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
       {/* Invoice header fields */}
       <div className="pi-card pi-header-fields">
         <div className="pi-field-group">
-          <label className="pi-label">Supplier Name</label>
+          <label className="pi-label">Supplier</label>
           <input
             className="pi-input"
-            placeholder="e.g. ABC Distributors"
+            placeholder="e.g. Ghazzawi Bros."
             value={supplier}
             onChange={(e) => setSupplier(e.target.value)}
           />
         </div>
-        <div className="pi-field-group pi-field-group--grow">
-          <label className="pi-label">Notes / Reference</label>
+        <div className="pi-field-group">
+          <label className="pi-label">Supplier invoice #</label>
           <input
             className="pi-input"
-            placeholder="Optional delivery note, PO number…"
+            placeholder="e.g. SAL-260006255 or 10003440"
+            value={supplierInvoiceNo}
+            onChange={(e) => setSupplierInvoiceNo(e.target.value)}
+          />
+        </div>
+        <div className="pi-field-group pi-field-group--narrow">
+          <label className="pi-label">Currency</label>
+          <select className="pi-input" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+            <option value="USD">USD</option>
+            <option value="LBP">LBP</option>
+          </select>
+        </div>
+        <div className="pi-field-group">
+          <label className="pi-label">Delivery date</label>
+          <input
+            className="pi-input"
+            type="date"
+            value={deliveryDate}
+            onChange={(e) => setDeliveryDate(e.target.value)}
+          />
+        </div>
+        <div className="pi-field-group pi-field-group--grow">
+          <label className="pi-label">Notes</label>
+          <input
+            className="pi-input"
+            placeholder="Driver, zone, internal reference…"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -403,16 +529,21 @@ export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
           <span className="pi-lines-count">{lines.length} line{lines.length !== 1 ? "s" : ""}</span>
         </div>
 
+        <div className="pi-lines-scroll">
         {/* Column headers */}
         <div className="pi-col-headers">
           <div className="pi-col-headers__num">#</div>
-          <div className="pi-col-headers__sku">SKU</div>
-          <div className="pi-col-headers__name">Product Name</div>
+          <div className="pi-col-headers__sku">Code</div>
+          <div className="pi-col-headers__name">Description</div>
+          <div className="pi-col-headers__xs">Brand</div>
+          <div className="pi-col-headers__xs">Unit</div>
           <div className="pi-col-headers__sm">Qty</div>
-          <div className="pi-col-headers__sm">Cost Price</div>
-          <div className="pi-col-headers__sm">Sell Price</div>
-          <div className="pi-col-headers__sm">Min Stock</div>
-          <div className="pi-col-headers__sub">Subtotal</div>
+          <div className="pi-col-headers__xs">Qty/Pcs</div>
+          <div className="pi-col-headers__sm">Cost</div>
+          <div className="pi-col-headers__xs">Disc%</div>
+          <div className="pi-col-headers__sm">Sell</div>
+          <div className="pi-col-headers__sm">Min</div>
+          <div className="pi-col-headers__sub">Total</div>
           <div className="pi-col-headers__rm" />
         </div>
 
@@ -433,6 +564,7 @@ export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
         <button className="pi-add-line-btn" onClick={addLine}>
           + Add Product Line
         </button>
+        </div>
       </div>
 
       {/* Footer totals + actions */}
@@ -442,8 +574,8 @@ export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
             <span>Lines</span><span>{lines.length}</span>
           </div>
           <div className="pi-footer__row">
-            <span>Total Units</span>
-            <span>{lines.reduce((s, l) => s + (l.qty || 0), 0)}</span>
+            <span>Stock pieces</span>
+            <span>{totalStockUnits}</span>
           </div>
           <div className="pi-footer__divider" />
           <div className="pi-footer__row pi-footer__row--total">
@@ -467,9 +599,19 @@ export default function POSPurchaseInvoice({ existingProducts = [], onSave }) {
       {/* Confirm modal */}
       {showConfirm && (
         <ConfirmModal
-          invoice={{ ref: invoiceRef.current, date: dateRef.current, supplier, notes, lines }}
+          invoice={{
+            ref: invoiceRef.current,
+            date: dateRef.current,
+            supplier,
+            supplierInvoiceNo,
+            currency,
+            notes,
+            lines,
+            total,
+          }}
           onConfirm={handleConfirm}
           onCancel={() => setShowConfirm(false)}
+          busy={saving}
         />
       )}
     </div>

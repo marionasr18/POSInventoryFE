@@ -95,6 +95,27 @@
     gap: 20px;
     flex-wrap: wrap;
   }
+  .pi-field-group--narrow {
+    min-width: 100px;
+    max-width: 120px;
+  }
+  .pi-lines-scroll {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .pi-lines-scroll .pi-col-headers,
+  .pi-lines-scroll .pi-line-row {
+    min-width: 1280px;
+  }
+  .pi-col-headers__xs { width: 72px; flex-shrink: 0; text-align: center; }
+  .pi-line-row__field--xs { width: 72px; flex-shrink: 0; }
+  .pi-line-stock-hint {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
   .pi-field-group {
     display: flex;
     flex-direction: column;
@@ -379,7 +400,7 @@
     border: none;
     box-shadow: 0 3px 12px rgba(37,99,235,.28);
   }
-  .pi-btn--primary:hover  { background: #1d4ed8; box-shadow: 0 4px 16px rgba(37,99,235,.38); }
+  .pi-btn--primary:hover  { background: var(--primary-hover); box-shadow: var(--shadow-md); }
   .pi-btn--primary:active { transform: scale(.98); }
   .pi-btn--ghost {
     background: transparent;

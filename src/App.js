@@ -19,7 +19,7 @@ import HomeDashboard from "./HomeDashboard/HomeDashboard";
 // import DisableUser from "./DisableUser";
 import POSTransPayment from "./TransactionAndPayment/POSTransPayment";
 import POSStaffLayout from "./TransactionAndPayment/POSStaffLayout";
-import POSPurchaseInvoice from "./TransactionAndPayment/POSPurchaseInvoice";
+import POSPurchasePage from "./TransactionAndPayment/POSPurchasePage";
 
 function App() {
   return (
@@ -42,7 +42,7 @@ function App() {
             <Route path="/pos" element={<POSStaffLayout />}>
               <Route index element={<Navigate to="sales" replace />} />
               <Route path="sales" element={<POSTransPayment />} />
-              <Route path="purchase" element={<POSPurchaseInvoice />} />
+              <Route path="purchase" element={<POSPurchasePage />} />
             </Route>
              {/*<Route path='/sportsDefinition'><Route index element={<SportsDefinition />} /></Route>
             <Route path='/fieldsDefinition'><Route index element={<FieldDefinition />} /></Route>
